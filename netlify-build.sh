@@ -11,7 +11,7 @@ cp package.json package.json.workspace
 cp package.netlify.json package.json
 
 echo "→ Installing dependencies..."
-npm install --legacy-peer-deps --ignore-scripts
+npm install --legacy-peer-deps --ignore-scripts --no-audit
 
 echo "→ Building..."
 npx vite build --config vite.config.vercel.ts
