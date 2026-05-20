@@ -1,0 +1,118 @@
+The Netlify deploy errored, with the following guidance provided:
+
+Diagnosis
+- Relevant log lines: Netlify swapped in a standalone package.json then the install failed when it tried to run a husky command: [line 68](#L68), [line 71](#L71), [line 74](#L74), [line 75](#L75). The overall build command failed as a result: [line 82](#L82)-[line 86](#L86).
+- Error type and cause: npm exited with code 127 because the shell tried to run the husky binary but it was not installed ("sh: 1: husky: not found") ([line 75](#L75)). This commonly happens when:
+  - Husky is referenced by a package.json script (e.g. "prepare": "husky install") but the husky package is not installed, or
+  - Netlify installed only production dependencies (devDependencies were omitted) and husky is only listed as a devDependency, so the prepare script runs but the binary isn’t present.
+
+Solution — quick checklist and fixes
+1) Verify whether husky is present in the package.json that Netlify uses for the build
+- Confirm which package.json Netlify is building (Netlify's log shows "Swapping in standalone package.json" [line 68](#L68)). Open that package.json in your repo (or the project subfolder Netlify targets) and check for:
+  - any "prepare" or postinstall script that runs "husky" and
+  - whether "husky" appears under "dependencies" or only under "devDependencies".
+- Example check locally:
+  - cat package.json | grep -n '"husky"\|"prepare"' (run in the project directory Netlify builds).
+
+2) If your build needs husky to run, add it to dependencies (so it’s installed in production) and commit
+- Edit package.json and move/add husky to "dependencies" (not just devDependencies). Example snippet:
+```json
+{
+  "dependencies": {
+    "husky": "^8.0.0"
+  }
+}
+```
+- Then run npm install, commit, and redeploy.
+
+3) If husky is NOT required during CI build (recommended for most CI/CD flows), skip husky install during Netlify builds
+- Add an environment variable so husky's install step is skipped in CI. Two easy options:
+  - In netlify.toml:
+```toml
+[build.environment]
+  HUSKY_SKIP_INSTALL = "1"
+```
+  - Or set the same env var in Netlify UI (Site settings → Build & deploy → Environment → Add variable HUSKY_SKIP_INSTALL = 1).
+- Or export the var at the top of your netlify-build.sh:
+```bash
+export HUSKY_SKIP_INSTALL=1
+# then your existing build steps
+```
+
+4) (Alternative) Instruct Netlify to install devDependencies (not usually recommended)
+- If you must install devDependencies, set NPM_FLAGS so npm installs dev deps (example):
+  - In netlify.toml:
+```toml
+[build.environment]
+  NPM_FLAGS = "--include=dev"
+```
+- Note: prefer skipping husky in CI instead of installing all devDependencies.
+
+Why this fixes it
+- The error is the husky binary missing when npm runs a script that calls it. Either ensure the binary exists by installing husky as a dependency, or prevent the script from running in CI by setting HUSKY_SKIP_INSTALL.
+
+If you want, tell me which package.json file Netlify is building (root vs subfolder) and I can point to the exact file lines to edit.
+
+The relevant error logs are:
+
+Line 0: Waiting for other deploys from your team to complete. Check the queue: https://app.netlify.com/teams/zaespace/builds
+Line 1: build-image version: ac6eb13fbf000e5c09ad677efd8b7c3c2d0142b6 (noble-new-builds)
+Line 2: buildbot version: de14d13d022c18f089944497bd804e269fc4f82f
+Line 3: Fetching cached dependencies
+Line 4: Failed to fetch cache, continuing with build
+Line 5: Starting to prepare the repo for build
+Line 6: No cached dependencies found. Cloning fresh repo
+Line 7: git clone --filter=blob:none https://github.com/Zakenss/librairie-2b
+Line 8: Preparing Git Reference refs/heads/main
+Line 9: Installing dependencies
+Line 10: mise ~/.config/mise/config.toml tools: python@3.14.3
+Line 11: mise ~/.config/mise/config.toml tools: ruby@3.4.8
+Line 12: mise ~/.config/mise/config.toml tools: go@1.26.2
+Line 13: v20.20.2 is already installed.
+Line 14: Now using node v20.20.2 (npm v10.8.2)
+Line 60: ​
+Line 61: ❯ Context
+Line 62:   production
+Line 63: ​
+Line 64: build.command from netlify.toml                               
+Line 65: ────────────────────────────────────────────────────────────────
+Line 66: ​
+Line 67: $ chmod +x netlify-build.sh && ./netlify-build.sh
+Line 68: → Swapping in standalone package.json...
+Line 69: → Installing dependencies...
+Line 70: Failed during stage 'building site': Build script returned non-zero exit code: 2
+Line 71: npm error code 127
+Line 72: npm error path /opt/build/repo/node_modules/.pnpm/react-hook-form@7.75.0_react@19.1.0/node_modules/react-hook-form
+Line 73: npm error command failed
+Line 74: npm error command sh -c husky
+Line 75: npm error sh: 1: husky: not found
+Line 76: npm error A complete log of this run can be found in: /opt/buildhome/.npm/_logs/2026-05-20T18_14_49_449Z-debug-0.log
+Line 77: ​
+Line 78: "build.command" failed                                        
+Line 79: ────────────────────────────────────────────────────────────────
+Line 80: ​
+Line 81:   Error message
+Line 82:   Command failed with exit code 127: chmod +x netlify-build.sh && ./netlify-build.sh
+Line 83: ​
+Line 84:   Error location
+Line 85:   In build.command from netlify.toml:
+Line 86:   chmod +x netlify-build.sh && ./netlify-build.sh
+Line 87: ​
+Line 88:   Resolved config
+Line 89:   build:
+Line 90:     command: chmod +x netlify-build.sh && ./netlify-build.sh
+Line 91:     commandOrigin: config
+Line 92:     environment:
+Line 93:       - VITE_SUPABASE_ANON_KEY
+Line 94:       - VITE_SUPABASE_URL
+Line 95:       - NODE_VERSION
+Line 96:     publish: /opt/build/repo/artifacts/librairie-2b/dist
+Line 97:     publishOrigin: config
+Line 98:   redirects:
+Line 99:     - from: /*
+      status: 200
+      to: /index.html
+  redirectsOrigin: config
+Line 100: Build failed due to a user error: Build script returned non-zero exit code: 2
+Line 101: Failing build: Failed to build site
+Line 102: Finished processing build request in 15.77s

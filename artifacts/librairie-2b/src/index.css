@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-parchment-50: #F8FAFF;
+  --color-parchment-100: #F0F4FF;
+  --color-parchment-200: #E4ECFF;
+  --color-parchment-300: #CCDAFF;
+  --color-parchment-400: #AFBFFF;
+  --color-parchment-500: #8FA3F5;
+  --color-parchment-600: #6B83E8;
+  --color-parchment-700: #4E65CF;
+  --color-parchment-800: #3849A8;
+  --color-parchment-900: #263480;
+
+  --color-espresso-50: #EEF2FF;
+  --color-espresso-100: #E0E7FF;
+  --color-espresso-200: #C7D2FE;
+  --color-espresso-300: #9FB3FB;
+  --color-espresso-400: #7091F8;
+  --color-espresso-500: #4169E1;
+  --color-espresso-600: #2F52C8;
+  --color-espresso-700: #233DAF;
+  --color-espresso-800: #1A2E8E;
+  --color-espresso-900: #122170;
+  --color-espresso-950: #0B1550;
+
+  --color-amber-50: #FEF8F3;
+  --color-amber-100: #FDF0E5;
+  --color-amber-200: #F9DCBE;
+  --color-amber-300: #F4C28D;
+  --color-amber-400: #EEA258;
+  --color-amber-500: #E78128;
+  --color-amber-600: #C96A3C;
+  --color-amber-700: #A9522E;
+  --color-amber-800: #894326;
+  --color-amber-900: #6C3621;
+  --color-amber-950: #3A1B10;
+
+  --color-terracotta-500: #5B8CDB;
+  --color-terracotta-600: #3D6EC4;
+  --color-terracotta-700: #2854A8;
+
+  --font-heading: 'Fraunces', serif;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: Menlo, monospace;
+
+  --shadow-book: 0 4px 12px rgba(18, 33, 112, 0.08), 0 2px 4px rgba(18, 33, 112, 0.04);
+  --shadow-book-hover: 0 8px 24px rgba(18, 33, 112, 0.12), 0 4px 8px rgba(18, 33, 112, 0.06);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #F0F4FF;
+    color: #122170;
+  }
+}

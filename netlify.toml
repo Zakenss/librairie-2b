@@ -1,0 +1,13 @@
+[build]
+  command = "chmod +x netlify-build.sh && ./netlify-build.sh"
+  publish = "artifacts/librairie-2b/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  HUSKY = "0"
+  HUSKY_SKIP_INSTALL = "1"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
